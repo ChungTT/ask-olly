@@ -96,15 +96,18 @@ export class AskOllyPage {
   async sendQuestion(question: string, clientName?: string, timeout = 60_000) {
     await expect(this.editorInput).toBeVisible({ timeout });
     await this.editorInput.click();
-    await this.page.keyboard.type(question);
+    const finalQuestion = clientName ? `${clientName} ${question}` : question;
     if (clientName) {
       // Trigger mention dropdown
       await this.page.keyboard.type(' @');
       await this.selectClientFromMention(clientName, timeout);
+      // đảm bảo có khoảng trắng sau mention (nếu UI không tự thêm)
+      await this.page.keyboard.type(' ');
     }
+    await this.page.keyboard.type(question);
     await expect(this.sendButton).toBeEnabled({ timeout });
     await this.sendButton.click();
-    
+    return finalQuestion;
   }
   async selectClientFromMention(clientName: string, timeout = 60_000) {
     // Wait dropdown mention appears (at least one option visible)
@@ -113,11 +116,13 @@ export class AskOllyPage {
     await expect(option).toBeVisible({ timeout });
     await option.click();
   }
-  async verifyQuestionAndResponse(question: string, timeout = 60_000) {
+  async verifyQuestionAndResponse(question: string, clientName?:string, timeout = 60_000) {
     // 1) Question visible in chat area
+    if(clientName) {
+      question = UiUtils.injectClientName(question, clientName);
+    }
     const questionNode = this.chatArea.getByText(question, { exact: false }).last();
     await expect(questionNode).toBeVisible({ timeout });
-
     // 2) Có label "Everfit" xuất hiện SAU question đó
     const everfitLabel = questionNode.locator(
       'xpath=following::div[normalize-space(.)="Everfit"][1]'
@@ -132,8 +137,6 @@ export class AskOllyPage {
     await expect
       .poll(async () => (await answerBlock.innerText()).trim().length, { timeout })
       .toBeGreaterThan(0);
-    
-    await this.page.waitForTimeout(3000); // pause a few seconds to debug visually
   }
 
   // TC-04: Send Example card without selecting client
@@ -200,14 +203,14 @@ async selectClientFromSearchInput(clientName: string, timeout = 60_000) {
 }
 
   async sendExampleCard(index = 0, clientName?: string, timeout = 60_000) {
-    const exampleText = await this.getExampleCardText(index, timeout);
+    let exampleText = await this.getExampleCardText(index, timeout);
     await this.clickExampleCard(index, timeout);
     if(clientName) {
       await this.selectClientFromSearchInput(clientName, timeout);
     }
     await expect(this.sendButton).toBeEnabled({ timeout });
     await this.sendButton.click();
-
+    exampleText = await this.getExampleCardText(index, timeout);
     return exampleText;
   }
 

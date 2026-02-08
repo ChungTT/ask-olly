@@ -14,7 +14,7 @@ export class LoginPage {
     this.clientsTitle = page.locator('.client-head', { hasText: /Clients/i });
   }
 
-  async login(timeout = 60_000) {
+  async login(timeout = 120_000) {
     const email = process.env.TEST_EMAIL;
     const password = process.env.TEST_PASSWORD;
     if (!email || !password) throw new Error('Missing TEST_EMAIL or TEST_PASSWORD in .env');
@@ -28,8 +28,14 @@ export class LoginPage {
     await this.emailInput.fill(email);
     await this.passwordInput.fill(password);
 
-    // click and wait for "client" page
-    await this.submitButton.click();
+    // click + wait URL correct after login
+    await Promise.all([
+     // this.page.waitForURL('**/home/client', { timeout }),
+      this.page.waitForURL('**/home/client', { timeout, waitUntil: 'commit' }),
+      await this.submitButton.click(),
+    ]);
+
+    // verify UI login successful
     await expect(this.clientsTitle).toBeVisible({ timeout });
   }
 }

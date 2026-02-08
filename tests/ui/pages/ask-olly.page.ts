@@ -1,5 +1,5 @@
 import { expect, type Locator, type Page } from '@playwright/test';
-import { UiUtils } from '../helpers/ui-utils';
+import { UiUtils } from '../../utils/ui.utils';
 
 export class AskOllyPage {
   readonly page: Page;
@@ -29,7 +29,6 @@ export class AskOllyPage {
   readonly newChatConfirmModal: Locator;
   readonly newChatOkButton: Locator;
   readonly newChatCancelButton: Locator;
-
 
   constructor(page: Page) {
     this.page = page;
@@ -181,26 +180,26 @@ export class AskOllyPage {
   }
   
 
-async selectClientFromSearchInput(clientName: string, timeout = 60_000) {
-  const name = clientName.trim();
-  const searchInput = this.page.getByPlaceholder('Search client');
-  await expect(searchInput).toBeVisible({ timeout });
-  await searchInput.fill(name);
-  const container = this.page.locator('#evf-ai-custom-entry-component');
-  await expect(container).toBeVisible({ timeout });
-  const optionByName = container
-    .locator('.evf-mention-entry__name', { hasText: name })
-    .first();
-  const optionFallback = container.getByText(name, { exact: false }).first();
-  if (await optionByName.count()) {
-    await expect(optionByName).toBeVisible({ timeout });
-    await optionByName.click();
-  } else {
-    await expect(optionFallback).toBeVisible({ timeout });
-    await optionFallback.click();
+  async selectClientFromSearchInput(clientName: string, timeout = 60_000) {
+    const name = clientName.trim();
+    const searchInput = this.page.getByPlaceholder('Search client');
+    await expect(searchInput).toBeVisible({ timeout });
+    await searchInput.fill(name);
+    const container = this.page.locator('#evf-ai-custom-entry-component');
+    await expect(container).toBeVisible({ timeout });
+    const optionByName = container
+      .locator('.evf-mention-entry__name', { hasText: name })
+      .first();
+    const optionFallback = container.getByText(name, { exact: false }).first();
+    if (await optionByName.count()) {
+      await expect(optionByName).toBeVisible({ timeout });
+      await optionByName.click();
+    } else {
+      await expect(optionFallback).toBeVisible({ timeout });
+      await optionFallback.click();
+    }
+    await expect(container).toBeHidden({ timeout }).catch(() => {});
   }
-  await expect(container).toBeHidden({ timeout }).catch(() => {});
-}
 
   async sendExampleCard(index = 0, clientName?: string, timeout = 60_000) {
     let exampleText = await this.getExampleCardText(index, timeout);
@@ -223,7 +222,6 @@ async selectClientFromSearchInput(clientName: string, timeout = 60_000) {
     await this.newChatOkButton.click();
     await expect(this.newChatConfirmModal).toBeHidden({ timeout });
   }
-
   async clickNewChatAndCancel(timeout = 60_000) {
     await expect(this.newChatButton).toBeVisible({ timeout });
     await this.newChatButton.click();
@@ -241,7 +239,6 @@ async selectClientFromSearchInput(clientName: string, timeout = 60_000) {
     // Try example visible again
     await expect(this.tryExampleSection).toBeVisible({ timeout });
   }
-
   async verifyChatNotReset(previousQuestionText: string, timeout = 60_000) {
     // Old message still there
     await expect(this.chatArea.getByText(previousQuestionText, { exact: false })).toBeVisible({
@@ -251,5 +248,13 @@ async selectClientFromSearchInput(clientName: string, timeout = 60_000) {
     await expect(this.tryExampleSection).toBeHidden({ timeout }).catch(async () => {
       await expect(this.sendButton).toBeVisible({ timeout });
     });
+  }
+
+  // TC-08: Verify Send button state
+  async verifySendButtonEnabled(timeout = 60_000) {
+    await expect(this.sendButton).toBeEnabled({ timeout });
+  }
+  async verifySendButtonDisabled(timeout = 60_000) {
+    await expect(this.sendButton).toBeDisabled({ timeout });
   }
 }

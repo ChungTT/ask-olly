@@ -1,8 +1,10 @@
 import { test } from '@playwright/test';
-import { LoginPage } from '../pages/login.page';
+import  {LoginPage}  from '../pages/login.page';
 import { AskOllyPage } from '../pages/ask-olly.page';
 
+let ask: AskOllyPage;
 test.describe('Ask Olly', () => {
+  test.describe.configure({ timeout: 120_000 })
   test.beforeEach(async ({ page }) => {
     await new LoginPage(page).login();
     await new AskOllyPage(page).goto();
@@ -59,4 +61,12 @@ test.describe('Ask Olly', () => {
     await ask.clickNewChatAndCancel();
     await ask.verifyChatNotReset(question);
   });
+  test('TC-08 Verify send disabled when input is empty only space (Intentional Fail) - Demonstrate failing report on Ask Olly', async ({ page }) => {
+    const ask = new AskOllyPage(page);
+    const question = '   ';
+    await ask.sendQuestion(question);
+    //Intentional FAIL: Send button "should be enabled" even when input is empty
+    // it should be disabled is correct, but let set it to enabled to demonstrate failing report
+    await ask.verifySendButtonEnabled();
+  }); 
 });

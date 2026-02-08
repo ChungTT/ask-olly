@@ -65,8 +65,7 @@ test.describe('Ask Olly', () => {
     const ask = new AskOllyPage(page);
     const question = '   ';
     await ask.sendQuestion(question);
-    //Intentional FAIL: Send button "should be enabled" even when input is empty
-    // it should be disabled is correct, but let set it to enabled to demonstrate failing report
+    //button should be disabled but we are verifying enabled to demonstrate fail report
     await ask.verifySendButtonEnabled();
   }); 
 });

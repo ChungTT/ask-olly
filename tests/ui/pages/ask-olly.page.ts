@@ -17,10 +17,10 @@ export class AskOllyPage {
   // Chat area (after send)
   readonly chatArea: Locator;
 
-  // Everfit response paragraphs (stable anchor from HTML)
+  // Everfit response paragraphs 
   readonly everfitResponseBlock: Locator;
 
-  // Mention options (dynamic id: mention-option-xxxx-0)
+  // Mention options 
   readonly mentionOptions: Locator;
   readonly mentionOptionByText: (text: string) => Locator;
 
@@ -36,8 +36,7 @@ export class AskOllyPage {
     this.askPlaceholder = page.locator('#placeholder-evf-ai-mention-editor');
     this.sendButton = page.locator('#ai-chat-send-button');
     this.editorInput = page.locator('.public-DraftEditor-content[contenteditable="true"]');
-    
-
+  
     // Try example section
     this.tryExampleSection = page.locator('#ai-chat-try-example');
     this.exampleAnchors = this.tryExampleSection.locator('span.highlight:text("Client")');
@@ -56,12 +55,12 @@ export class AskOllyPage {
     this.mentionOptionByText = (text: string) =>
       page.locator('[id^="mention-option-"]').filter({ hasText: text }).first();
 
-    // New Chat button (stable from your HTML)
+    // New Chat button
     this.newChatButton = page
       .locator('div[data-ai-chat-header="true"]')
       .getByRole('button', { name: /new chat/i });
 
-    // Confirm popup DIV only (avoid strict mode w/ IMG using same class)
+    // Confirm popup DIV only 
     this.newChatConfirmModal = page.locator('div.confirm-popup-container.new-chat-confirm-modal');
     this.newChatOkButton = this.newChatConfirmModal.getByRole('button', { name: /^OK$/ });
     this.newChatCancelButton = this.newChatConfirmModal.getByRole('button', { name: /^Cancel$/ });
@@ -100,7 +99,6 @@ export class AskOllyPage {
       // Trigger mention dropdown
       await this.page.keyboard.type(' @');
       await this.selectClientFromMention(clientName, timeout);
-      // đảm bảo có khoảng trắng sau mention (nếu UI không tự thêm)
       await this.page.keyboard.type(' ');
     }
     await this.page.keyboard.type(question);
@@ -122,17 +120,17 @@ export class AskOllyPage {
     }
     const questionNode = this.chatArea.getByText(question, { exact: false }).last();
     await expect(questionNode).toBeVisible({ timeout });
-    // 2) Có label "Everfit" xuất hiện SAU question đó
+    // label "Everfit" visible after question
     const everfitLabel = questionNode.locator(
       'xpath=following::div[normalize-space(.)="Everfit"][1]'
     );
     await expect(everfitLabel).toBeVisible({ timeout });
 
-    // 3) Answer block có text (div ngay sau label Everfit)
+    // 3) Answer block visible
     const answerBlock = everfitLabel.locator('xpath=following-sibling::*[1]');
     await expect(answerBlock).toBeVisible({ timeout });
 
-    // Poll cho tới khi answer có nội dung thật (tránh rỗng lúc đang streaming/render)
+    // Poll until answer text non-empty
     await expect
       .poll(async () => (await answerBlock.innerText()).trim().length, { timeout })
       .toBeGreaterThan(0);

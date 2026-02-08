@@ -6,7 +6,7 @@ dotenv.config();
 const BASE_URL = process.env.BASE_URL ?? 'https://dev.everfit.io/login';
 
 const commonUse = {
-  //headless: !!process.env.CI,
+  headless: !!process.env.CI,
   baseURL: BASE_URL,
   trace: 'on-first-retry' as const,
   httpCredentials: process.env.BASIC_AUTH_USER

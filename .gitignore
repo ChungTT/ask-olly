@@ -1,5 +1,19 @@
+# Dependencies
 node_modules/
+
+# Playwright outputs
 playwright-report/
 test-results/
+blob-report/
+
+# Environment
 .env
+.env.*
+
+# Auth / test data
 tests/auth/*.json
+
+# OS / Editor
+.DS_Store
+.vscode/
+.idea/

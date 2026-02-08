@@ -1,59 +1,28 @@
-# Bug Report – Everfit Practice Environment
+# BUG-001 Title: Password expired shows “Unauthorized” after login, but user can still access Ask Olly via direct link
+# Module: Authentication / Authorization (Global)
+# Severity: High (security/auth inconsistency)
+# Priority: P1
 
-This document lists issues observed while exploring the Everfit practice environment (including **Home > Ask Olly**).
+# Preconditions / Test data:
+User account in “password expired” state (or server returns password-expired on login)
+# Practice environment: https://dev.everfit.io/
+# Steps to reproduce:
+    a. Go to Login page: https://dev.everfit.io/login
+    b. Enter valid username + an password (or trigger password-expired state).
+    c.Submit login.
+    d. system shows popup enter user name and password and click Signin
+         user name: guest
+         password: o3V4PEH2WE (it is expired)
+Observe the login result (UI shows “Unauthorized”).
+Open Ask Olly using a direct URL (e.g., navigate to Home > Ask Olly or paste the Ask Olly link).
+Observe access behavior.
 
-## Environment
-- URL: `https://dev.everfit.io`
-- Feature: `Home > Ask Olly`
-- Browser: Chrome (Playwright Chromium)
+# Actual result:
+Login shows Unauthorized 
+But user can still open Ask Olly and use the feature successfully.
 
----
-
-## BUG-01 – Ask Olly icon shows warning symbol (⚠️) instead of the intended animation/icon
-
-**Type:** UI/UX (visual)  
-**Severity:** Low (cosmetic), but may indicate a missing asset/error in the UI bundle.
-
-### Preconditions
-- User is logged in.
-- Navigate to **Home > Ask Olly**.
-
-### Steps to Reproduce
-1. Open sidebar and locate the **Ask Olly** navigation item.
-2. Navigate to **Home > Ask Olly**.
-3. Observe the hero/icon at the top of the Ask Olly page.
-
-### Actual Result
-- The Ask Olly icon/animation renders as a **warning symbol (⚠️)** in:
-  - Sidebar navigation item
-  - Ask Olly page hero/icon
-
-### Expected Result
-- Ask Olly icon/animation should render correctly (no warning symbol / fallback icon).
-
-### Notes / Evidence
-- In the captured UI snapshot, the element labeled `lottie-animation-container` contains a `⚠️` indicator in both the sidebar item and the page header area.
-
----
-
-## BUG-02 – Onboarding checklist overlay appears on Ask Olly page and may distract / overlap content
-
-**Type:** UI/UX  
-**Severity:** Low (depends on screen size)
-
-### Preconditions
-- User is logged in.
-- Navigate to **Home > Ask Olly**.
-
-### Steps to Reproduce
-1. Go to Ask Olly.
-2. Observe the right side of the screen.
-
-### Actual Result
-- An onboarding/checklist widget appears (e.g., “Customize metrics”, progress “3 of 6 completed”), even when user is focusing on Ask Olly.
-
-### Expected Result
-- The Ask Olly page should be distraction-free, or the checklist should be collapsible by default / not overlap primary tasks.
-
-### Notes
-- This may be intended onboarding behavior, but it can reduce focus and may cause layout issues on smaller viewports.
+# Expected result:
+If the session is unauthorized/expired, user should be blocked consistently:
+Either force re-login / redirect to login,
+Or show a clear “Session expired” message and deny access to protected pages (including Ask Olly).
+Evidence: Video "evident-login-incorrect-password.mov"

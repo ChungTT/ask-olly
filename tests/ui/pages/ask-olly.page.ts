@@ -29,6 +29,7 @@ export class AskOllyPage {
   readonly newChatConfirmModal: Locator;
   readonly newChatOkButton: Locator;
   readonly newChatCancelButton: Locator;
+  readonly searchClientInput: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -36,6 +37,7 @@ export class AskOllyPage {
     this.askPlaceholder = page.locator('#placeholder-evf-ai-mention-editor');
     this.sendButton = page.locator('#ai-chat-send-button');
     this.editorInput = page.locator('.public-DraftEditor-content[contenteditable="true"]');
+    this.searchClientInput = page.getByPlaceholder('Search client');
   
     // Try example section
     this.tryExampleSection = page.locator('#ai-chat-try-example');
@@ -149,40 +151,21 @@ export class AskOllyPage {
     const raw = await card.innerText();
     return UiUtils.normalizeText(raw);
   }
-
   async clickExampleCard(index = 0, timeout = 60_000) {
     await expect(this.tryExampleSection).toBeVisible({ timeout });
+
     const anchor = this.exampleAnchors.nth(index);
     await expect(anchor).toBeVisible({ timeout });
 
-    // Click fallback on ancestors (UI handler might be attached higher)
-    const candidates = [
-      anchor.locator('xpath=ancestor::div[1]'),
-      anchor.locator('xpath=ancestor::div[2]'),
-      anchor.locator('xpath=ancestor::div[3]'),
-      anchor.locator('xpath=ancestor::div[4]'),
-    ];
-
-    for (const c of candidates) {
-      if (await c.isVisible()) {
-        try {
-          await c.click({ timeout: 5_000 });
-          return;
-        } catch {
-          // try next
-        }
-      }
-    }
-
-    await anchor.click({ timeout });
+    const card = anchor.locator('xpath=ancestor::div[1]');
+    await expect(card).toBeVisible({ timeout });
+    await card.click({ timeout });
   }
   
-
   async selectClientFromSearchInput(clientName: string, timeout = 60_000) {
     const name = clientName.trim();
-    const searchInput = this.page.getByPlaceholder('Search client');
-    await expect(searchInput).toBeVisible({ timeout });
-    await searchInput.fill(name);
+    await expect(this.searchClientInput).toBeVisible({ timeout });
+    await this.searchClientInput.fill(name);
     const container = this.page.locator('#evf-ai-custom-entry-component');
     await expect(container).toBeVisible({ timeout });
     const optionByName = container
@@ -227,7 +210,6 @@ export class AskOllyPage {
     await this.newChatCancelButton.click();
     await expect(this.newChatConfirmModal).toBeHidden({ timeout });
   }
-
   async verifyChatReset(previousQuestionText: string, timeout = 60_000) {
     // Old message gone
     await expect(this.chatArea.getByText(previousQuestionText, { exact: false })).toHaveCount(0);
@@ -242,7 +224,7 @@ export class AskOllyPage {
     await expect(this.chatArea.getByText(previousQuestionText, { exact: false })).toBeVisible({
       timeout,
     });
-    // If UI hides try-example when chat exists (usual)
+    // If UI hides try-example when chat exists 
     await expect(this.tryExampleSection).toBeHidden({ timeout }).catch(async () => {
       await expect(this.sendButton).toBeVisible({ timeout });
     });
